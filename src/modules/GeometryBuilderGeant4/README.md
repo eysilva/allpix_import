@@ -110,6 +110,7 @@ This module can create support layers and passive volumes of the following mater
     * diamond
     * silicon carbide
     * titanium grade 5
+    * Isotopic Boron <sup>10</sup>B (b10)
     * vacuum
 
 Furthermore, this module can automatically load any material defined in the Geant4 material database \[[@g4materials]\]. This comprises both simple materials and pre-defined NIST compounds.

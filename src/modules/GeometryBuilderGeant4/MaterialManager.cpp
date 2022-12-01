@@ -77,6 +77,8 @@ void Materials::set(const std::string& name, G4Material* material) {
  *   - gold
  *   - cadmium_telluride
  *   - titanium
+ *   - SiO2 
+ *  
  * - Composite or custom materials:
  *   - carbon fiber
  *   - epoxy
@@ -90,6 +92,7 @@ void Materials::set(const std::string& name, G4Material* material) {
  *   - diamond
  *   - silicon carbide
  *   - titanium grade 5
+ *   - Boron 10
  *   - vacuum
  */
 void Materials::init_materials() {
@@ -112,6 +115,11 @@ void Materials::init_materials() {
     materials_["nickel"] = nistman->FindOrBuildMaterial("G4_Ni");
     materials_["gold"] = nistman->FindOrBuildMaterial("G4_Au");
     materials_["titanium"] = nistman->FindOrBuildMaterial("G4_Ti");
+    materials_["sio2"] = nistman->FindOrBuildMaterial("G4_SILICON_DIOXIDE");
+    materials_["gadolinium"] = nistman->FindOrBuildMaterial("G4_Gd");
+
+
+
 
     // Get required elements from database
     auto* H = nistman->FindOrBuildElement("H");
@@ -212,6 +220,7 @@ void Materials::init_materials() {
     TitaniumGrade5->AddElement(V, 0.04);
     materials_["ti5"] = TitaniumGrade5;
 
+    //Create boron 10 material
     auto* isoB10 = new G4Isotope("B10", 5, 10, 10.012937 * CLHEP::g / CLHEP::mole);
     auto* elB10 = new G4Element("B10", "B", 1);
     elB10->AddIsotope(isoB10, 1);
