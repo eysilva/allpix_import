@@ -28,6 +28,8 @@
 #include <G4StepLimiterPhysics.hh>
 #include <G4UImanager.hh>
 #include <G4UserLimits.hh>
+#include <G4DecayPhysics.hh>
+#include "UCNModularPhysicsList.hpp"
 
 #include "G4FieldManager.hh"
 #include "G4TransportationManager.hh"
@@ -73,6 +75,8 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     config_.setDefault("source_type", "beam");
     config_.setDefault<bool>("output_plots", false);
     config_.setDefault<int>("output_plots_scale", Units::get(100, "ke"));
+    config_.setDefault<bool>("use_neutron_physics", false);
+
     config_.setDefault<double>("max_step_length", Units::get(1.0, "um"));
     // Default value chosen to ensure proper gamma generation for Cs137 decay
     config_.setDefault<double>("cutoff_time", 2.21e+11);
@@ -220,7 +224,12 @@ void DepositionGeant4Module::initialize() {
 
     // Set minimum remaining kinetic energy for a track
     double min_charge_creation_energy{};
-    if(config_.has("charge_creation_energy")) {
+    
+    if(config_.has("particle_energy_cutoff")){
+        min_charge_creation_energy = config_.get<double>("particle_energy_cutoff");
+        LOG(INFO) << "Setting minimum kinetic energy for tracks to " << Units::display(min_charge_creation_energy, {"eV"});
+    }
+    else if(config_.has("charge_creation_energy")) {
         min_charge_creation_energy = config_.get<double>("charge_creation_energy");
         LOG(INFO) << "Setting minimum kinetic energy for tracks to " << Units::display(min_charge_creation_energy, {"eV"});
     } else {
@@ -253,6 +262,16 @@ void DepositionGeant4Module::initialize() {
                    << " and maximum track length to " << Units::display(max_track_length, {"mm", "cm", "m"});
         world_log_volume->GetRegion()->SetUserLimits(user_limits_world_.get());
     }
+
+
+    if(config_.get<bool>("use_decay_physics") == true) {
+        // Register Ultra Cold Neutron physics list
+        LOG(INFO) << "Using Ultra-Cold Neutron physics add-on";
+        physicsList->RegisterPhysics(new G4DecayPhysics());
+        physicsList->RegisterPhysics(new UCNModularPhysicsList());
+        
+    }
+
 
     // Initialize the physics list
     LOG(TRACE) << "Initializing physics processes";
