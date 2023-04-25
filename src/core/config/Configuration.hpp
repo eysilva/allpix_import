@@ -2,7 +2,7 @@
  * @file
  * @brief Core object of the configuration system
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -283,20 +283,20 @@ namespace allpix {
          * @brief Return total number of key / value pairs
          * @return Number of settings
          */
-        unsigned int countSettings() const;
+        unsigned int countSettings() const { return static_cast<unsigned int>(config_.size()); }
 
         /**
          * @brief Get name of the configuration header
          * @return Configuration name
          */
-        std::string getName() const;
+        const std::string& getName() const { return name_; }
 
         /**
          * @brief Get path to the file containing the configuration if it has one
          * @return Absolute path to configuration file or empty if not linked to a file
          * @warning Parameter should be used with care as not all configurations are required to have a file
          */
-        std::filesystem::path getFilePath() const;
+        std::filesystem::path getFilePath() const { return path_; }
 
         /**
          * @brief Merge other configuration, only adding keys that are not yet defined in this configuration

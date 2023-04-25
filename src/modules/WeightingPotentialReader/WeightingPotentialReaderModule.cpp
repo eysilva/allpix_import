@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of module to read weighting fields
  *
- * @copyright Copyright (c) 2018-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2018-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -93,8 +93,20 @@ void WeightingPotentialReaderModule::initialize() {
         LOG(TRACE) << "Adding weighting potential from pad in plane condenser";
 
         // Get pixel implant size from the detector model:
-        auto implant = model->getImplantSize();
-        auto function = get_pad_potential_function(implant, thickness_domain);
+        auto implants = model->getImplants();
+        if(implants.size() > 1) {
+            throw ModuleError("Detector model contains more than one implant, not supported for pad potential");
+        }
+
+        auto implant = (implants.empty() ? ROOT::Math::XYZVector(model->getPixelSize().x(), model->getPixelSize().y(), 0)
+                                         : implants.front().getSize());
+        // This module currently only works with pad definition, i.e. 2D implant deinition:
+        if(implant.z() > std::numeric_limits<double>::epsilon()) {
+            throw InvalidValueError(
+                config_, "model", "model 'pad' can only be used with 2D implants, but non-zero thickness found");
+        }
+
+        auto function = get_pad_potential_function({implant.x(), implant.y()}, thickness_domain);
         detector_->setWeightingPotentialFunction(function, thickness_domain, FieldType::CUSTOM);
     }
 

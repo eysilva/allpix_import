@@ -2,7 +2,7 @@
  * @file
  * @brief Definition of  of pulse transfer module
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -40,7 +40,7 @@ namespace allpix {
          * @param messenger Pointer to the messenger object to allow binding to messages on the bus
          * @param detector Pointer to the detector for this module instance
          */
-        PulseTransferModule(Configuration& config, Messenger* messenger, const std::shared_ptr<Detector>& detector);
+        PulseTransferModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector);
 
         /**
          * @brief Initialize optional ROOT histograms
@@ -70,6 +70,7 @@ namespace allpix {
 
         double max_depth_distance_{};
         bool collect_from_implant_{};
+        std::once_flag first_event_flag_;
 
         // Output histograms
         Histogram<TH1D> h_total_induced_charge_, h_induced_pixel_charge_;

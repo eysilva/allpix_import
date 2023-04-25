@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2022-2023 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 title: "Scope of this Manual"
 weight: 1
@@ -25,4 +25,4 @@ required from novice users, but knowledge of (modern) C++ will be useful in the 
 overall understanding of the mechanisms.
 
 
-[@ap2-doxygen]: https://cern.ch/allpix-squared/reference/
+[@ap2-doxygen]: https://allpix-squared.docs.cern.ch/reference/

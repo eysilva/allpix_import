@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of thread pool for concurrent events
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -71,17 +71,6 @@ ThreadPool::~ThreadPool() {
 
 void ThreadPool::markComplete(uint64_t n) {
     queue_.complete(n);
-}
-
-uint64_t ThreadPool::minimumUncompleted() const {
-    return queue_.currentId();
-}
-
-size_t ThreadPool::queueSize() const {
-    return queue_.size();
-}
-size_t ThreadPool::bufferedQueueSize() const {
-    return queue_.prioritySize();
 }
 
 void ThreadPool::checkException() {

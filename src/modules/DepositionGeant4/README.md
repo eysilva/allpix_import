@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2023 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0 OR MIT
 title: "DepositionGeant4"
 description: "Energy deposition with Geant4"
@@ -89,8 +89,10 @@ This module requires an installation Geant4.
 * `cutoff_time` : Maximum lifetime of particles to be propagated in the simulation. This setting is passed to Geant4 as user limit and assigned to all sensitive volumes. Particles and decay products are only propagated and decayed up the this time limit and all remaining kinetic energy is deposited in the sensor it reached the time limit in. Defaults to 221s (to ensure proper gamma creation for the Cs137 decay).
 Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the simulation with the default `cutoff_time`.
 * `record_all_tracks` : Switch to enable the recording of all Geant4 tracks in the event. By default, this parameter is set to `false` and MCTrack objects are only generated for particles interacting with sensor material, not those that never interact with any detector.
-* `geant4_tracking_verbosity ` : Verbosity level for Geant4 tracking, defaults to `0`. Higher levels mean more output. It should be noted that the respective log output is redirected to the logging level set via the `log_level_g4cout` parameter in the *GeometryBuilderGeant4* module.
+* `geant4_tracking_verbosity` : Verbosity level for Geant4 tracking, defaults to `0`. Higher levels mean more output. It should be noted that the respective log output is redirected to the logging level set via the `log_level_g4cout` parameter in the *GeometryBuilderGeant4* module.
 * `number_of_particles` : Number of particles to generate in a single event. Defaults to one particle.
+* `deposit_in_frontside_implants` : Boolean to select whether charge carriers should be generated in frontside implants. Defaults to `true`.
+* `deposit_in_backside_implants` : Boolean to select whether charge carriers should be generated in backside implants. Defaults to `false`.
 * `output_plots` : Enables output histograms to be be generated from the data in every step (slows down simulation considerably). Disabled by default.
 * `output_plots_scale` : Set the x-axis scale of the output plot, defaults to 100ke.
 
@@ -110,6 +112,10 @@ Note: Neutrons have a lifetime of 882 seconds and will not be propagated in the 
 
 ### Parameters for source `macro`
 * `file_name` : Path to the Geant4 source macro file.
+
+### Note for Developers
+
+This module is used as base for other deposition modules using Geant4 for particle tracking, e.g. DepositionCosmics or DepositionGenerator. Since some of these modules might have a sequence requirement for event processing, this module is a `SequentialModule` but waives the sequence requirement in its constructor. Any derived module that requires a strict sequence has to call `waive_sequence_requirement(false)` in its constructor to overwrite this setting.
 
 ## Usage
 A possible default configuration to use, simulating a beam of 120 GeV pions with a divergence in x, is the following:

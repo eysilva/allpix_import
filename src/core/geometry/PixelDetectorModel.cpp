@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of a pixel detector model
  *
- * @copyright Copyright (c) 2021-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2021-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -29,12 +29,27 @@ PixelDetectorModel::PixelDetectorModel(std::string type,
     // Size of the pixels
     auto pixel_size = config.get<XYVector>("pixel_size");
     setPixelSize(pixel_size);
-    // Size of the collection diode implant on each pixel, defaults to the full pixel size when not specified
-    auto implant_size = config.get<XYVector>("implant_size", pixel_size);
-    if(implant_size.x() > pixel_size.x() || implant_size.y() > pixel_size.y()) {
-        throw InvalidValueError(config, "implant_size", "implant size cannot be larger than pixel pitch");
+}
+
+void PixelDetectorModel::validate() {
+
+    // Validate implants:
+    for(const auto& implant : this->getImplants()) {
+        if(implant.getSize().x() > pixel_size_.x() || implant.getSize().y() > pixel_size_.y()) {
+            throw InvalidValueError(implant.getConfiguration(), "size", "implant size cannot be larger than pixel pitch");
+        }
+        if(implant.getSize().z() > getSensorSize().z()) {
+            throw InvalidValueError(
+                implant.getConfiguration(), "size", "implant depth cannot be larger than sensor thickness");
+        }
+
+        // Offset of the collection diode implant from the pixel center, defaults to zero.
+        if(std::fabs(implant.getOffset().x()) + implant.getSize().x() / 2 > pixel_size_.x() / 2 ||
+           std::fabs(implant.getOffset().y()) + implant.getSize().y() / 2 > pixel_size_.y() / 2) {
+            throw InvalidValueError(
+                implant.getConfiguration(), "offset", "implant exceeds pixel cell. Reduce implant size or offset");
+        }
     }
-    setImplantSize(implant_size);
 }
 
 /**
@@ -46,20 +61,6 @@ bool PixelDetectorModel::isWithinSensor(const ROOT::Math::XYZPoint& local_pos) c
     return (2 * std::fabs(local_pos.z() - sensor_center.z()) <= sensor_size.z()) &&
            (2 * std::fabs(local_pos.y() - sensor_center.y()) <= sensor_size.y()) &&
            (2 * std::fabs(local_pos.x() - sensor_center.x()) <= sensor_size.x());
-}
-
-/**
- * The definition of inside the implant region is determined by the detector model
- *
- * @note The pixel implant currently is always positioned symmetrically, in the center of the pixel cell.
- */
-bool PixelDetectorModel::isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const {
-
-    auto [xpixel, ypixel] = getPixelIndex(local_pos);
-    auto inPixelPos = local_pos - getPixelCenter(xpixel, ypixel);
-
-    return (std::fabs(inPixelPos.x()) <= std::fabs(getImplantSize().x() / 2) &&
-            std::fabs(inPixelPos.y()) <= std::fabs(getImplantSize().y() / 2));
 }
 
 /**
@@ -85,8 +86,8 @@ ROOT::Math::XYZPoint PixelDetectorModel::getPixelCenter(const int x, const int y
 }
 
 std::pair<int, int> PixelDetectorModel::getPixelIndex(const ROOT::Math::XYZPoint& position) const {
-    auto pixel_x = static_cast<int>(std::round(position.x() / pixel_size_.x()));
-    auto pixel_y = static_cast<int>(std::round(position.y() / pixel_size_.y()));
+    auto pixel_x = static_cast<int>(std::lround(position.x() / pixel_size_.x()));
+    auto pixel_y = static_cast<int>(std::lround(position.y() / pixel_size_.y()));
     return {pixel_x, pixel_y};
 }
 

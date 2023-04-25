@@ -2,7 +2,7 @@
  * @file
  * @brief Utility to plot line graph diagrams of charge carrier drift paths
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2022-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -239,8 +239,8 @@ namespace allpix {
 
             // Create animation of moving charges
             auto animation_time = static_cast<unsigned int>(
-                std::round((Units::convert(config.get<long double>("output_plots_step"), "ms") / 10.0) *
-                           config.get<long double>("output_animations_time_scaling", 1e9)));
+                std::lround((Units::convert(config.get<long double>("output_plots_step"), "ms") / 10.0) *
+                            config.get<long double>("output_animations_time_scaling", 1e9)));
             unsigned long plot_idx = 0;
             unsigned int point_cnt = 0;
             LOG_PROGRESS(INFO, module->getUniqueName() + "_OUTPUT_PLOTS")
@@ -278,7 +278,7 @@ namespace allpix {
                     const auto& [time, charge, type, state] = deposit;
 
                     auto diff = static_cast<unsigned long>(
-                        std::round((time - start_time) / config.get<long double>("output_plots_step")));
+                        std::lround((time - start_time) / config.get<long double>("output_plots_step")));
                     if(plot_idx < diff) {
                         min_idx_diff = std::min(min_idx_diff, diff - plot_idx);
                         continue;

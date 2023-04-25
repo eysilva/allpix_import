@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2023 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
 # Define module and return the generated name as MODULE_NAME
@@ -6,6 +6,9 @@ ALLPIX_DETECTOR_MODULE(MODULE_NAME)
 
 # Add source files to library
 ALLPIX_MODULE_SOURCES(${MODULE_NAME} TransientPropagationModule.cpp)
+
+# Register module tests
+ALLPIX_MODULE_TESTS(${MODULE_NAME} "tests")
 
 # Eigen is required for Runge-Kutta propagation
 PKG_CHECK_MODULES(Eigen3 REQUIRED IMPORTED_TARGET eigen3)

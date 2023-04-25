@@ -3,7 +3,7 @@
  * @brief Implements the particle generator
  * @remark Based on code from John Idarraga
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -257,7 +257,7 @@ void GeneratorActionG4::GeneratePrimaries(G4Event* event) {
 
             // Warn about non-zero source energy:
             if(config_.get<double>("source_energy") > 0) {
-                LOG(WARNING)
+                LOG_ONCE(WARNING)
                     << "A radioactive isotope is used as particle source, but the source energy is not set to zero.";
             }
         } else if(particle_type_.substr(0, 3) == "ion") {

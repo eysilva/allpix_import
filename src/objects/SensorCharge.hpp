@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of object for charges in sensor
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -26,6 +26,15 @@ namespace allpix {
     inline std::ostream& operator<<(std::ostream& os, const CarrierType type) {
         os << (type == CarrierType::ELECTRON ? "\"e\"" : "\"h\"");
         return os;
+    }
+
+    /**
+     * @brief Invert the type of a charge carrier
+     * @param type Initial type of the charge carrier
+     * @return Inverted type of the charge carrier
+     */
+    inline CarrierType invertCarrierType(const CarrierType& type) {
+        return (type == CarrierType::ELECTRON ? CarrierType::HOLE : CarrierType::ELECTRON);
     }
 
     /**

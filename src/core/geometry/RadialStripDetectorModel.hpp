@@ -2,7 +2,7 @@
  * @file
  * @brief Parameters of a radial strip detector model
  *
- * @copyright Copyright (c) 2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2022-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -116,7 +116,7 @@ namespace allpix {
          *  radius of the first row, the last element is the outer radius of the last row (virtually
          *  the inner radius of the nonexistent (N+1)-th row).
          */
-        std::vector<double> getRowRadii() { return row_radius_; }
+        const std::vector<double>& getRowRadii() const { return row_radius_; }
 
         /**
          * @brief Get the radius of the sensor center
@@ -163,67 +163,6 @@ namespace allpix {
             return {inner_pitch_.at(row) + 2 * strip_length_.at(row) * tan(angular_pitch_.at(row) / 2),
                     strip_length_.at(row)};
         }
-
-        /**
-         * @brief Set the number of strips
-         * @param val Vector describing number of strips in each strip row
-         */
-        void setNumberOfStrips(std::vector<unsigned int> val) { number_of_strips_ = std::move(val); }
-
-        /**
-         * @brief Set the strip length
-         * @param val Vector describing strip length in each strip row
-         */
-        void setStripLength(std::vector<double> val) { strip_length_ = std::move(val); }
-
-        /**
-         * @brief Set the angular strip pitch
-         * @param val Vector describing angular strip pitch in each row
-         */
-        void setAngularPitch(std::vector<double> val) { angular_pitch_ = std::move(val); }
-
-        /**
-         * @brief Set the inner strip pitch
-         * @param val Vector describing inner strip pitch in each strip row
-         */
-        void setInnerPitch(std::vector<double> val) { inner_pitch_ = std::move(val); }
-
-        /**
-         * @brief Set the length of the trapezoidal sensor wrapper
-         * @param val Length of the trapezoidal sensor wrapper
-         */
-        void setSensorLength(double val) { sensor_length_ = val; }
-
-        /**
-         * @brief Set the smaller base length of the trapezoidal sensor wrapper
-         * @param val Length of the smaller base of the trapezoidal sensor wrapper
-         */
-        void setSensorBaseInner(double val) { sensor_base_.at(0) = val; }
-
-        /**
-         * @brief Set the larger base length of the trapezoidal sensor wrapper
-         * @param val Length of the larger base of the trapezoidal sensor wrapper
-         */
-        void setSensorBaseOuter(double val) { sensor_base_.at(1) = val; }
-
-        /**
-         * @brief Set the angle subtended by each strip row
-         * @param val Vector describing angle subtended by each strip row
-         */
-        void setRowAngle(std::vector<double> val) { row_angle_ = std::move(val); }
-
-        /**
-         * @brief Set outer radius of each strip row
-         * @param val Vector describing outer radius of each strip row
-         */
-        void setRowRadius(std::vector<double> val) { row_radius_ = std::move(val); }
-
-        /**
-         * @brief Set the sensor stereo angle
-         * @param val Sensor stereo angle
-         */
-        void setStereoAngle(double val) { stereo_angle_ = val; }
-
         /**
          * @brief Returns if a local position is within the sensitive device
          * @param position Position in local coordinates of the detector model
@@ -244,16 +183,6 @@ namespace allpix {
          */
         ROOT::Math::XYZPoint getSensorIntercept(const ROOT::Math::XYZPoint& inside,
                                                 const ROOT::Math::XYZPoint& outside) const override;
-
-        /**
-         * @brief Returns if a local position is within the pixel implant region of the sensitive device
-         * @param position Position in local coordinates of the detector model
-         * @return True if a local position is within the pixel implant, false otherwise
-         *
-         * @note Pixel implant region is not implemented properly when using radial_strip
-         *      detectors due to the requirement of a TCAD electric field.
-         */
-        bool isWithinImplant(const ROOT::Math::XYZPoint& position) const override;
 
         /**
          * @brief Returns if a strip index is within the grid of strips defined for the device
@@ -328,6 +257,66 @@ namespace allpix {
         bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const override;
 
     private:
+        /**
+         * @brief Set the number of strips
+         * @param val Vector describing number of strips in each strip row
+         */
+        void setNumberOfStrips(std::vector<unsigned int> val) { number_of_strips_ = std::move(val); }
+
+        /**
+         * @brief Set the strip length
+         * @param val Vector describing strip length in each strip row
+         */
+        void setStripLength(std::vector<double> val) { strip_length_ = std::move(val); }
+
+        /**
+         * @brief Set the angular strip pitch
+         * @param val Vector describing angular strip pitch in each row
+         */
+        void setAngularPitch(std::vector<double> val) { angular_pitch_ = std::move(val); }
+
+        /**
+         * @brief Set the inner strip pitch
+         * @param val Vector describing inner strip pitch in each strip row
+         */
+        void setInnerPitch(std::vector<double> val) { inner_pitch_ = std::move(val); }
+
+        /**
+         * @brief Set the length of the trapezoidal sensor wrapper
+         * @param val Length of the trapezoidal sensor wrapper
+         */
+        void setSensorLength(double val) { sensor_length_ = val; }
+
+        /**
+         * @brief Set the smaller base length of the trapezoidal sensor wrapper
+         * @param val Length of the smaller base of the trapezoidal sensor wrapper
+         */
+        void setSensorBaseInner(double val) { sensor_base_.at(0) = val; }
+
+        /**
+         * @brief Set the larger base length of the trapezoidal sensor wrapper
+         * @param val Length of the larger base of the trapezoidal sensor wrapper
+         */
+        void setSensorBaseOuter(double val) { sensor_base_.at(1) = val; }
+
+        /**
+         * @brief Set the angle subtended by each strip row
+         * @param val Vector describing angle subtended by each strip row
+         */
+        void setRowAngle(std::vector<double> val) { row_angle_ = std::move(val); }
+
+        /**
+         * @brief Set outer radius of each strip row
+         * @param val Vector describing outer radius of each strip row
+         */
+        void setRowRadius(std::vector<double> val) { row_radius_ = std::move(val); }
+
+        /**
+         * @brief Set the sensor stereo angle
+         * @param val Sensor stereo angle
+         */
+        void setStereoAngle(double val) { stereo_angle_ = val; }
+
         std::vector<unsigned int> number_of_strips_{};
         std::vector<double> strip_length_{};
         std::vector<double> angular_pitch_{};

@@ -1,5 +1,5 @@
 ---
-# SPDX-FileCopyrightText: 2022 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2022-2023 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: CC-BY-4.0
 ---
 
@@ -92,7 +92,7 @@ The following notes should be taken for these fields:
     for example module READMEs, the `weight` field must be omitted so that hugo sorts them alphabetically.
 
 For modules, additional front matter tags have to be set, as explained in the
-[documentation](./usermanual/09_development/03_new_module.md#readmemd).
+[documentation](./usermanual/10_development/03_new_module.md#readmemd).
 
 ## Formulae
 
@@ -107,7 +107,7 @@ also means that explicit backticks (like `` $` `` or `` ```math ``) can't be use
 You can easily test the website of the documentation with your changes yourself by running:
 ```shell
 git clone --recurse-submodules https://gitlab.cern.ch/allpix-squared/allpix-squared-website.git
-APSQ_REPO=your_user_name/allpix-squared APSQ_REF=branch_name ./get_artifacts.sh
+./get_artifacts.sh ref your_branch_name your_cern_user_name/allpix-squared
 hugo server
 ```
 

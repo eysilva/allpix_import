@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of Geant4 geometry construction module
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -129,6 +129,8 @@ void GeometryBuilderGeant4Module::initialize() {
     } else {
         LOG(DEBUG) << "Making a single-thread RunManager";
         run_manager_g4_ = std::make_unique<RunManager>();
+        LOG(INFO) << "Using Geant4 modules without multithreading might reduce performance when using complex geometries, "
+                     "please check the documentation for details";
     }
 
     // Set the geometry construction to use

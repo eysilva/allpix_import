@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2023 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
 echo -e "\nPreparing code basis for a new module:\n"
@@ -115,7 +115,7 @@ if [ "$type" = 2 ]; then
     command="sed ${opt} \
         -e 's/GeometryManager\* geo_manager/std::shared\_ptr\<Detector\> detector/g' \
         -e 's/Module(config)/Module\(config\, detector\)/g' \
-        -e 's/geo_manager_(geo_manager)/detector_(detector)/g' \
+        -e 's/geo_manager_(geo_manager)/detector_(std::move(detector))/g' \
         -e 's/bindMulti/bindSingle/g' \
         -e '/for(auto/d' \
         -e 's/\s\{8\}/\ \ \ \ /' \

@@ -2,7 +2,7 @@
  * @file
  * @brief Collection of string utilities
  *
- * @copyright Copyright (c) 2016-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2016-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -108,7 +108,7 @@ namespace allpix {
     template <typename T, std::enable_if_t<std::is_enum<T>::value, bool> = true>
     std::string to_string_impl(T inp, empty_tag);
 
-    ///@{
+    /// @{
     /**
      * @ingroup StringConversions
      * @brief Conversion handler for strings
@@ -119,7 +119,7 @@ namespace allpix {
     inline std::string to_string_impl(const std::string& inp, empty_tag) { return '"' + inp + '"'; }
     inline std::string to_string_impl(const char* inp, empty_tag) { return '"' + std::string(inp) + '"'; }
     inline std::string to_string_impl(char* inp, empty_tag) { return '"' + std::string(inp) + '"'; }
-    ///@}
+    /// @}
 
     /**
      * @brief Splits string into substrings at delimiters

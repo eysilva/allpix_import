@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of Monte-Carlo track object
  *
- * @copyright Copyright (c) 2018-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2018-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -121,9 +121,10 @@ void MCTrack::print(std::ostream& out) const {
         << std::left << std::setw(big_gap) << "Termination in G4Volume: " << std::right << std::setw(small_gap)
         << end_g4_vol_name_ << '\n'
         << std::left << std::setw(big_gap) << "Initial position:" << std::right << std::setw(med_gap) << start_point_.X()
-        << " mm |" << std::setw(med_gap) << start_point_.Y() << " mm |" << std::setw(med_gap) << start_point_.Z() << " mm\n"
+        << " mm | " << std::setw(med_gap) << start_point_.Y() << " mm | " << std::setw(med_gap) << start_point_.Z()
+        << " mm\n"
         << std::left << std::setw(big_gap) << "Final position:" << std::right << std::setw(med_gap) << end_point_.X()
-        << " mm |" << std::setw(med_gap) << end_point_.Y() << " mm |" << std::setw(med_gap) << end_point_.Z() << " mm\n"
+        << " mm | " << std::setw(med_gap) << end_point_.Y() << " mm | " << std::setw(med_gap) << end_point_.Z() << " mm\n"
         << std::left << std::setw(big_gap) << "Initial time:" << std::right << std::setw(med_gap) << global_start_time_
         << " ns\n"
         << std::left << std::setw(big_gap) << "Final time:" << std::right << std::setw(med_gap) << global_end_time_

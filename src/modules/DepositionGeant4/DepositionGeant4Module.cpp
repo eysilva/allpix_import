@@ -3,7 +3,7 @@
  * @brief Implementation of Geant4 deposition module
  * @remarks Based on code from Mathieu Benoit
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -64,9 +64,11 @@ thread_local std::vector<SensitiveDetectorActionG4*> DepositionGeant4Module::sen
  * Includes the particle source point to the geometry using \ref GeometryManager::addPoint.
  */
 DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger* messenger, GeometryManager* geo_manager)
-    : Module(config), messenger_(messenger), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
+    : SequentialModule(config), messenger_(messenger), geo_manager_(geo_manager), run_manager_g4_(nullptr) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
+    // Waive any sequence requirement: base module not sequential, but derived modules might be
+    waive_sequence_requirement();
 
     // Set default physics list
     config_.setDefault("physics_list", "FTFP_BERT_LIV");
@@ -82,6 +84,10 @@ DepositionGeant4Module::DepositionGeant4Module(Configuration& config, Messenger*
     config_.setDefault<double>("cutoff_time", 2.21e+11);
     // By default, only record MCTracks connected to MCParticles in the sensitive volume
     config_.setDefault<bool>("record_all_tracks", false);
+
+    // Defaults for energy deposition in implants
+    config_.setDefault<bool>("deposit_in_frontside_implants", true);
+    config_.setDefault<bool>("deposit_in_backside_implants", false);
 
     // Create user limits for maximum step length and maximum event time in the sensor
     user_limits_ =
@@ -478,6 +484,21 @@ void DepositionGeant4Module::construct_sensitive_detectors_and_fields() {
 
         // Add the sensitive detector action
         logical_volume->SetSensitiveDetector(sensitive_detector_action);
+
+        // Add the sensitive detector action to fronmtside implant volumes
+        std::regex regex;
+        if(config_.get<bool>("deposit_in_frontside_implants") && config_.get<bool>("deposit_in_backside_implants")) {
+            regex = "implant_log_.*";
+        } else if(config_.get<bool>("deposit_in_frontside_implants")) {
+            regex = "implant_log_frontside_.*";
+        } else if(config_.get<bool>("deposit_in_backside_implants")) {
+            regex = "implant_log_backside_.*";
+        }
+        for(const auto& implant : geo_manager_->getExternalObjects<G4LogicalVolume>(detector->getName(), regex)) {
+            implant->SetUserLimits(user_limits_.get());
+            implant->SetSensitiveDetector(sensitive_detector_action);
+        }
+
         sensors_.push_back(sensitive_detector_action);
 
         // If requested, prepare output plots

@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of Geant4 geometry visualization module
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -282,7 +282,16 @@ void VisualizationGeant4Module::set_visualization_settings() {
     }
 
     // Set default viewer orientation
-    UI->ApplyCommand("/vis/viewer/set/viewpointThetaPhi -70 20");
+    auto viewpoint_angles =
+        config_.getArray<double>("viewpoint_thetaphi", {Units::get<double>(-70, "deg"), Units::get<double>(20, "deg")});
+    if(viewpoint_angles.size() != 2) {
+        LOG(FATAL)
+            << "Parameter viewpoint_thetaphi VisualizationGeant4Module is not valid. Must be two angles (theta, phi).";
+        throw InvalidValueError(config_, "viewpoint_thetaphi", "invalid number of parameters given, must be two");
+    }
+    auto viewpoint_cmd = "/vis/viewer/set/viewpointThetaPhi " + std::to_string(Units::convert(viewpoint_angles[0], "deg")) +
+                         " " + std::to_string(Units::convert(viewpoint_angles[1], "deg"));
+    UI->ApplyCommand(viewpoint_cmd);
 
     // Do auto refresh if not accumulating and start viewer already
     if(!accumulate) {
@@ -456,14 +465,12 @@ void VisualizationGeant4Module::finalize() {
     UI->ApplyCommand("/vis/viewer/set/autoRefresh true");
 
     // Set new signal handler to fetch CTRL+C and close the Qt application
-    if(gui_session_ != nullptr) {
-        has_gui = true;
-    }
     prev_handler = std::signal(SIGINT, interrupt_handler);
 
     // Open GUI / terminal or start viewer depending on mode
-    if(mode_ == ViewingMode::GUI && has_gui) {
+    if(mode_ == ViewingMode::GUI && gui_session_ != nullptr) {
         LOG(INFO) << "Starting visualization session";
+        has_gui = true;
         gui_session_->SessionStart();
     } else if(mode_ == ViewingMode::TERMINAL) {
         LOG(INFO) << "Starting terminal session";

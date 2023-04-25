@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of Monte-Carlo particle object
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -58,6 +58,14 @@ ROOT::Math::XYZPoint MCParticle::getLocalReferencePoint() const {
         // Both points are coplanar with x-y plane. SImply return their center:
         return (static_cast<ROOT::Math::XYZVector>(local_end_point_) + local_start_point_) / 2.0;
     }
+}
+
+unsigned int MCParticle::getTotalDepositedCharge() const {
+    return deposited_charge_;
+}
+
+void MCParticle::setTotalDepositedCharge(unsigned int total_charge) {
+    deposited_charge_ = total_charge;
 }
 
 int MCParticle::getParticleID() const {

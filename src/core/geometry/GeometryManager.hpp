@@ -2,7 +2,7 @@
  * @file
  * @brief Keeping track of the global geometry of independent detectors
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -13,6 +13,7 @@
 #define ALLPIX_GEOMETRY_MANAGER_H
 
 #include <memory>
+#include <regex>
 #include <set>
 #include <string>
 #include <vector>
@@ -85,8 +86,13 @@ namespace allpix {
         /**
          * @brief Returns the list of standard paths where models should be searched in
          * @return List of absolute paths to file or directories that contain models
+         *
+         * The default list of models to search for are in the following order
+         * - The list of paths provided in the main configuration as model_paths
+         * - The build variable ALLPIX_MODEL_DIR pointing to the installation directory of the framework models
+         * - The directories in XDG_DATA_DIRS attached by ALLPIX_PROJECT_NAME or /usr/share/:/usr/local/share if not defined
          */
-        std::vector<std::string> getModelsPath();
+        const std::vector<std::string>& getModelsPath() const { return model_paths_; }
 
         /**
          * @brief Returns the position and orientation for a passive element
@@ -142,7 +148,7 @@ namespace allpix {
          * @returns List of all models
          * @warning The models returned might not be used in the geometry
          */
-        std::vector<std::shared_ptr<DetectorModel>> getModels() const;
+        const std::vector<std::shared_ptr<DetectorModel>>& getModels() const { return models_; }
 
         /**
          * @brief Get a detector model by its name
@@ -222,6 +228,16 @@ namespace allpix {
         std::shared_ptr<T> getExternalObject(const std::string& associated_name, const std::string& id) const;
 
         /**
+         * @brief Fetch an array of external objects associated to a detector or passive volume
+         * @param associated_name Name of the detector or passive volume the external object is associated to
+         * @param regex Regular expression which the ID is required to satisfy
+         * @return Vector of external objects, empty vector if no match could be found
+         */
+        template <typename T>
+        std::vector<std::shared_ptr<T>> getExternalObjects(const std::string& associated_name,
+                                                           const std::regex& regex) const;
+
+        /**
          * @brief Sets an external object associated to a detector or passive volume
          * @param associated_name Name of the detector or passive volume the external object is associated to
          * @param id ID of the external object
@@ -235,13 +251,13 @@ namespace allpix {
          * @brief Get all names of external objects registered via setExternalObject
          * @return Set of names of external objects
          */
-        std::set<std::string> getExternalObjectNames() const { return external_object_names_; };
+        const std::set<std::string>& getExternalObjectNames() const { return external_object_names_; }
 
         /**
          * @brief Get the list of Configuration objects for all passive elements in the current geometry
          * @return List of Configuration objects for passive elements
          */
-        std::list<Configuration>& getPassiveElements();
+        const std::list<Configuration>& getPassiveElements() const { return passive_elements_; }
 
     private:
         /**

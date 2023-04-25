@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2023 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
 ###########################################
@@ -6,12 +6,14 @@
 # provided as example and in manual       #
 ###########################################
 
+SET(DEFAULT_CLI_TEST_ARGS "-o number_of_events=10 -o random_seed=0")
 ADD_TEST(NAME "examples/example"
          COMMAND ${CMAKE_SOURCE_DIR}/etc/unittests/run_directory.sh "test_example"
-                 "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/examples/example.conf -o number_of_events=10")
+                 "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/examples/example.conf ${DEFAULT_CLI_TEST_ARGS}")
 ADD_DEFAULT_FAIL_CONDITIONS("examples/example")
-ADD_TEST(NAME "examples/manual" COMMAND ${CMAKE_SOURCE_DIR}/etc/unittests/run_directory.sh "test_manual"
-                                        "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/etc/manual.conf")
+ADD_TEST(NAME "examples/manual"
+         COMMAND ${CMAKE_SOURCE_DIR}/etc/unittests/run_directory.sh "test_manual"
+                 "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/etc/manual.conf ${DEFAULT_CLI_TEST_ARGS}")
 ADD_DEFAULT_FAIL_CONDITIONS("examples/manual")
 
 IF(TEST_EXAMPLES)
@@ -39,9 +41,14 @@ IF(TEST_EXAMPLES)
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
                 COMMAND
                     ${CMAKE_SOURCE_DIR}/etc/unittests/run_directory.sh "output/${test}"
-                    "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/examples/${test}/${test}.conf -o number_of_events=10 -o random_seed=0 ${ADDITIONAL_CLI_ARGS}"
+                    "${CMAKE_INSTALL_PREFIX}/bin/allpix -c ${CMAKE_SOURCE_DIR}/examples/${test}/${test}.conf ${DEFAULT_CLI_TEST_ARGS} ${ADDITIONAL_CLI_ARGS}"
             )
             SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES DEPENDS "${DEPENDENCY}")
+
+            IF(${test} MATCHES "radial_strip" OR ${test} MATCHES "atlas_itk_petal")
+                SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES FAIL_REGULAR_EXPRESSION "FATAL")
+            ENDIF()
+
             ADD_DEFAULT_FAIL_CONDITIONS(${TEST_NAME})
         ENDIF()
     ENDFOREACH()

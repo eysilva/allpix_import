@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of module
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -52,13 +52,6 @@ std::string Module::getUniqueName() const {
         throw InvalidModuleActionException("Cannot uniquely identify module in constructor");
     }
     return unique_name;
-}
-
-/**
- * Detector modules always have a linked detector and unique modules are guaranteed not to have one
- */
-std::shared_ptr<Detector> Module::getDetector() const {
-    return detector_;
 }
 
 /**
@@ -164,27 +157,6 @@ void Module::set_config_manager(ConfigManager* conf_manager) {
     conf_manager_ = conf_manager;
 }
 
-bool Module::multithreadingEnabled() const {
-    return multithreading_;
-}
-void Module::allow_multithreading() {
-    multithreading_ = true;
-}
-void Module::set_multithreading(bool multithreading) {
-    multithreading_ = multithreading;
-}
-
-Configuration& Module::get_configuration() {
-    return config_;
-}
-
-void Module::set_identifier(ModuleIdentifier identifier) {
-    identifier_ = std::move(identifier);
-}
-ModuleIdentifier Module::get_identifier() const {
-    return identifier_;
-}
-
 void Module::add_delegate(Messenger* messenger, BaseDelegate* delegate) {
     delegates_.emplace_back(messenger, delegate);
 }
@@ -195,6 +167,6 @@ bool Module::check_delegates(Messenger* messenger, Event* event) {
     });
 }
 
-void SequentialModule::waive_sequence_requirement() {
-    sequence_required_ = false;
+void SequentialModule::waive_sequence_requirement(bool waive) {
+    sequence_required_ = !waive;
 }

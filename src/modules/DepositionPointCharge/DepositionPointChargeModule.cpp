@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of a module to deposit charges at a specific point
  *
- * @copyright Copyright (c) 2018-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2018-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -74,6 +74,15 @@ void DepositionPointChargeModule::initialize() {
         carriers_ = static_cast<unsigned int>(eh_per_um * step_size_z_);
         LOG(INFO) << "Step size for MIP energy deposition: " << Units::display(step_size_z_, {"um", "mm"}) << ", depositing "
                   << carriers_ << " e/h pairs per step (" << Units::display(eh_per_um, "/um") << ")";
+
+        // Check if the number of charge carriers is larger than zero
+        if(carriers_ == 0) {
+            throw InvalidValueError(config_,
+                                    "number_of_steps",
+                                    "Number of charge carriers deposited per step is zero due to a large step number or "
+                                    "small number of e/h pairs per um");
+        }
+
     } else {
         config_.setDefault("number_of_charges", 1);
         carriers_ = config_.get<unsigned int>("number_of_charges");
@@ -87,7 +96,7 @@ void DepositionPointChargeModule::initialize() {
 
         // Scan with points required 3D scanning, scan with MIPs only 2D:
         if(type_ == SourceType::MIP) {
-            root_ = static_cast<unsigned int>(std::round(std::sqrt(events)));
+            root_ = static_cast<unsigned int>(std::lround(std::sqrt(events)));
             if(events != root_ * root_) {
                 LOG(WARNING) << "Number of events is not a square, pixel cell volume cannot fully be covered in scan. "
                              << "Closest square is " << root_ * root_;
@@ -96,7 +105,7 @@ void DepositionPointChargeModule::initialize() {
             voxel_ = ROOT::Math::XYZVector(
                 model->getPixelSize().x() / root_, model->getPixelSize().y() / root_, model->getSensorSize().z());
         } else {
-            root_ = static_cast<unsigned int>(std::round(std::cbrt(events)));
+            root_ = static_cast<unsigned int>(std::lround(std::cbrt(events)));
             if(events != root_ * root_ * root_) {
                 LOG(WARNING) << "Number of events is not a cube, pixel cell volume cannot fully be covered in scan. "
                              << "Closest cube is " << root_ * root_ * root_;
@@ -167,6 +176,8 @@ void DepositionPointChargeModule::DepositPoint(Event* event, const ROOT::Math::X
     mcparticles.emplace_back(position, position_global, position, position_global, -1, 0., 0.);
     LOG(DEBUG) << "Generated MCParticle at global position " << Units::display(position_global, {"um", "mm"})
                << " in detector " << detector_->getName();
+    // Count electrons and holes:
+    mcparticles.back().setTotalDepositedCharge(2 * carriers_);
 
     charges.emplace_back(position, position_global, CarrierType::ELECTRON, carriers_, 0., 0., &(mcparticles.back()));
     charges.emplace_back(position, position_global, CarrierType::HOLE, carriers_, 0., 0., &(mcparticles.back()));
@@ -200,14 +211,18 @@ void DepositionPointChargeModule::DepositLine(Event* event, const ROOT::Math::XY
     auto start_global = detector_->getGlobalPosition(start_local);
     auto end_global = detector_->getGlobalPosition(end_local);
 
+    // Total number of carriers will be:
+    auto charge = static_cast<unsigned int>(carriers_ * (end_local.z() - start_local.z()) / step_size_z_);
     // Create MCParticle:
     mcparticles.emplace_back(start_local, start_global, end_local, end_global, -1, 0., 0.);
     LOG(DEBUG) << "Generated MCParticle with start " << Units::display(start_global, {"um", "mm"}) << " and end "
                << Units::display(end_global, {"um", "mm"}) << " in detector " << detector_->getName();
+    // Count electrons and holes:
+    mcparticles.back().setTotalDepositedCharge(2 * charge);
 
     // Deposit the charge carriers:
     auto position_local = start_local;
-    while(position_local.z() < model->getSensorSize().z() / 2.0) {
+    while(position_local.z() < end_local.z()) {
         position_local += ROOT::Math::XYZVector(0, 0, step_size_z_);
         auto position_global = detector_->getGlobalPosition(position_local);
 

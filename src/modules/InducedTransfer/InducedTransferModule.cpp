@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of InducedTransfer module
  *
- * @copyright Copyright (c) 2019-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2019-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -21,10 +21,8 @@
 using namespace allpix;
 using namespace ROOT::Math;
 
-InducedTransferModule::InducedTransferModule(Configuration& config,
-                                             Messenger* messenger,
-                                             const std::shared_ptr<Detector>& detector)
-    : Module(config, detector), messenger_(messenger), detector_(detector) {
+InducedTransferModule::InducedTransferModule(Configuration& config, Messenger* messenger, std::shared_ptr<Detector> detector)
+    : Module(config, detector), messenger_(messenger), detector_(std::move(detector)) {
     // Enable multithreading of this module if multithreading is enabled
     allow_multithreading();
 

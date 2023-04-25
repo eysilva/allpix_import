@@ -1,11 +1,18 @@
-# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2023 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
 variables:
     REPOSITORY: "https://gitlab.cern.ch/allpix-squared/allpix-squared.git"
-    DOCKER_DEPS_IMAGE: "gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:v2"
+    DOCKER_DEPS_IMAGE: "gitlab-registry.cern.ch/allpix-squared/allpix-squared/allpix-squared-deps:v3"
     EOS_PATH: "/eos/project/a/allpix-squared/www/"
     DOCKER_FILE: etc/docker/Dockerfile
+
+default:
+    retry:
+        max: 2
+        when:
+            - stuck_or_timeout_failure
+            - runner_system_failure
 
 stages:
     - compilation
@@ -88,6 +95,7 @@ stages:
             - build
             - bin
             - lib
+            - share
         expire_in: 24 hour
 
 # Ensure that our LXPLUS setup script is functional:
@@ -216,7 +224,7 @@ fmt:coverity:
 
 fmt:reuse:
     image:
-        name: fsfe/reuse:latest
+        name: registry.cern.ch/docker.io/fsfe/reuse:latest
         entrypoint: [""]
     tags:
       - docker
@@ -247,12 +255,12 @@ fmt:reuse:
 .testmod:
     extends: .test
     script:
-        - ctest -R modules/ --no-compress-output --test-action Test
+        - ctest -R modules/ --repeat until-pass:2 --no-compress-output --test-action Test
 
 .testcore:
     extends: .test
     script:
-        - ctest -R core/ --no-compress-output --test-action Test
+        - ctest -R core/ --repeat until-pass:2 --no-compress-output --test-action Test
 
 
 # Test if examples still execute fine:
@@ -264,7 +272,7 @@ examples:
         - job: cmp:cc7-gcc
           artifacts: true
     script:
-        - ctest -R examples/ --no-compress-output --test-action Test
+        - ctest -R examples/ --repeat until-pass:2 --no-compress-output --test-action Test
 
 # LXPLUS
 mod:lxplus-gcc:
@@ -443,12 +451,14 @@ perf:cc7-gcc:
 # Compile Doxygen reference
 docs:doxygen:
     extends: .doc
-    image: gitlab-registry.cern.ch/sft/docker/centos7:latest
+    image: $DOCKER_DEPS_IMAGE
     script:
-        - source ../.ci/init_x86_64.sh
-        - cmake -GNinja -DBUILD_DOCS_ONLY=ON ..
-        - ninja apsq_docs_reference
-        - mv doc/reference/html ../public/reference
+        - apt install -y unzip doxygen
+        - curl -sL https://github.com/matusnovak/doxybook2/releases/download/v1.5.0/doxybook2-linux-amd64-v1.5.0.zip --output /tmp/doxybook2-linux64.zip
+        - unzip /tmp/doxybook2-linux64.zip -d /usr/local/
+        - cmake -DBUILD_DOCS_ONLY=ON ..
+        - make apsq_ref_markdown
+        - mv doc/reference_markdown ../public/reference_markdown
 
 # Create file tree for hugo
 docs:usermanual-hugo:
@@ -463,7 +473,7 @@ docs:usermanual-hugo:
 # Compile LaTeX user manual:
 docs:usermanual-pdf:
     extends: .doc
-    image: thomasweise/docker-texlive-full:latest
+    image: registry.cern.ch/docker.io/thomasweise/docker-texlive-full:latest
     script:
         - apt update && apt install -y git cmake ninja-build python3-yaml pandoc
         - pandoc --version
@@ -558,12 +568,8 @@ deploy:eos:
         - schedules@allpix-squared/allpix-squared
     dependencies:
         - docs:usermanual-pdf
-        - pkg:cc7-gcc
-        - pkg:cc7-llvm
-        - pkg:cc8-gcc
-        - pkg:macos-clang
     # Docker image with tools to deploy to EOS
-    image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer@sha256:f22e1364863e86bcddc45ff1da08dfb6b4a6d0203a7c4b15562713dcf4a8b717
+    image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
     script:
         - if [ ! -z ${CI_COMMIT_TAG} ]; then cp public/usermanual/allpix-manual-*.pdf public/usermanual/allpix-manual.pdf; fi
         - deploy-eos

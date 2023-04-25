@@ -2,7 +2,7 @@
  * @file
  * @brief Template implementation of detector fields
  *
- * @copyright Copyright (c) 2018-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2018-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -20,7 +20,7 @@ namespace allpix {
 
         // Return empty field if outside the matrix or no field is set
         auto [px, py] = model_->getPixelIndex(pos);
-        if(!model_->isWithinMatrix(px, py) || type_ == FieldType::NONE) {
+        if(type_ == FieldType::NONE || !model_->isWithinMatrix(px, py)) {
             return {};
         }
 
@@ -202,11 +202,6 @@ namespace allpix {
     auto DetectorField<T, N>::get_impl(size_t offset, std::index_sequence<I...>) const {
         return T{(*field_)[offset + I]...};
     }
-
-    /**
-     * The type of the field is set depending on the function used to apply it.
-     */
-    template <typename T, size_t N> FieldType DetectorField<T, N>::getType() const { return type_; }
 
     /**
      * @throws std::invalid_argument If the field bins are incorrect or the thickness domain is outside the sensor

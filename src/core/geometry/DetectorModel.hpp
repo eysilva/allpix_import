@@ -2,7 +2,7 @@
  * @file
  * @brief Base of detector models
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -23,6 +23,7 @@
 
 #include <Math/Point2D.h>
 #include <Math/Point3D.h>
+#include <Math/RotationZ.h>
 #include <Math/Vector2D.h>
 #include <Math/Vector3D.h>
 
@@ -78,6 +79,95 @@ namespace allpix {
         template <class T> bool is() { return dynamic_cast<T*>(this) != nullptr; }
 
         /**
+         * @brief Helper class to hold implant definitions for a detector model
+         */
+        class Implant {
+            friend class DetectorModel;
+
+        public:
+            enum class Type { FRONTSIDE, BACKSIDE };
+            enum class Shape { RECTANGLE, ELLIPSE };
+
+            /**
+             * @brief Get the offset of the implant with respect to the pixel center
+             * @return Implant offset
+             */
+            ROOT::Math::XYZVector getOffset() const { return offset_; }
+            /**
+             * @brief Get the implant orientation as rotation around its z-axis
+             * @return Implant orientation
+             */
+            ROOT::Math::RotationZ getOrientation() const { return orientation_; }
+            /**
+             * @brief Get the size of the implant
+             * @return Size of the implant
+             */
+            ROOT::Math::XYZVector getSize() const { return size_; }
+            /**
+             * @brief Return the type of the implant
+             * @return implant type
+             */
+            Type getType() const { return type_; }
+
+            /**
+             * @brief Return the shape of the implant
+             * @return implant shape
+             */
+            Shape getShape() const { return shape_; }
+
+            /**
+             * @brief helper to calculate containment of points with this implant
+             * @param  position Position relative to the pixel center
+             * @return True if point lies within implant, false otherwise
+             */
+            bool contains(const ROOT::Math::XYZVector& position) const;
+
+            /**
+             * @brief Fetch the configuration of this implant
+             * @return Implant configuration
+             */
+            const Configuration& getConfiguration() const { return config_; }
+
+            /**
+             * @brief calculate intersection of line segment with implant. The first intersection in the given direction is
+             * returned.
+             * @throws std::invalid_argument if intersection calculation is not implemented for the implant type
+             * @param  direction Direction vector of line
+             * @param  position  Position vector of line
+             * @return Closest intersection point with implant, std::nullopt if none could be found
+             */
+            std::optional<ROOT::Math::XYZPoint> intersect(const ROOT::Math::XYZVector& direction,
+                                                          const ROOT::Math::XYZPoint& position) const;
+
+        private:
+            /**
+             * @brief Constructs an implant, used in \ref DetectorModel::addImplant
+             * @param type Type of the implant
+             * @param shape Shape of the implant cross-section
+             * @param size Size of the implant
+             * @param offset Offset of the implant from the pixel center
+             * @param orientation Rotation angle around the implant z-axis
+             * @param config Configuration
+             */
+            Implant(Type type,
+                    Shape shape,
+                    ROOT::Math::XYZVector size,
+                    ROOT::Math::XYZVector offset,
+                    ROOT::Math::RotationZ orientation,
+                    Configuration config)
+                : type_(type), shape_(shape), size_(std::move(size)), offset_(std::move(offset)), orientation_(orientation),
+                  config_(std::move(config)) {}
+
+            // Actual parameters returned
+            Type type_;
+            Shape shape_;
+            ROOT::Math::XYZVector size_;
+            ROOT::Math::XYZVector offset_;
+            ROOT::Math::RotationZ orientation_;
+            Configuration config_;
+        };
+
+        /**
          * @brief Constructs the base detector model
          * @param type Name of the model type
          * @param assembly Detector assembly object with information about ASIC and packaging
@@ -90,17 +180,6 @@ namespace allpix {
          */
         virtual ~DetectorModel() = default;
 
-        ///@{
-        /**
-         * @brief Use default copy and move behaviour
-         */
-        DetectorModel(const DetectorModel&) = default;
-        DetectorModel& operator=(const DetectorModel&) = default;
-
-        DetectorModel(DetectorModel&&) = default;
-        DetectorModel& operator=(DetectorModel&&) = default;
-        ///@}
-
         /**
          * @brief Get the configuration associated with this model
          * @return Configuration used to construct the model
@@ -111,7 +190,7 @@ namespace allpix {
          * @brief Get the type of the model
          * @return Model type
          */
-        std::string getType() const { return type_; }
+        const std::string& getType() const { return type_; }
 
         const std::shared_ptr<DetectorAssembly> getAssembly() const { return assembly_; }
 
@@ -154,18 +233,12 @@ namespace allpix {
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>> getNPixels() const {
             return number_of_pixels_;
         }
-        /**
-         * @brief Set number of pixels (replicated blocks in generic sensors)
-         * @param val Number of two dimensional pixels
-         */
-        void setNPixels(ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>> val) {
-            number_of_pixels_ = std::move(val);
-        }
+
         /**
          * @brief Get size of a single pixel
          * @return Size of a pixel
          */
-        ROOT::Math::XYVector getPixelSize() const { return pixel_size_; }
+        const ROOT::Math::XYVector& getPixelSize() const { return pixel_size_; }
         /**
          * @brief Get type of the pixels
          * @return TYpe of the pixels indicating their shape
@@ -173,20 +246,11 @@ namespace allpix {
         Pixel::Type getPixelType() const { return pixel_type_; }
 
         /**
-         * @brief Set the size of a pixel
-         * @param val Size of a pixel
+         * @brief Return all implants
+         * @return List of all the implants
          */
-        void setPixelSize(ROOT::Math::XYVector val) { pixel_size_ = std::move(val); }
-        /**
-         * @brief Get size of the collection diode
-         * @return Size of the collection diode implant
-         */
-        ROOT::Math::XYVector getImplantSize() const { return implant_size_; }
-        /**
-         * @brief Set the size of the implant (collection diode) within a pixel
-         * @param val Size of the collection diode implant
-         */
-        void setImplantSize(ROOT::Math::XYVector val) { implant_size_ = std::move(val); }
+        inline const std::vector<Implant>& getImplants() const { return implants_; };
+
         /**
          * @brief Get total size of the pixel grid
          * @return Size of the pixel grid
@@ -226,32 +290,7 @@ namespace allpix {
          * @brief Get the material of the sensor
          * @return Material of the sensor
          */
-        SensorMaterial getSensorMaterial() { return sensor_material_; }
-        /**
-         * @brief Set the thickness of the sensor
-         * @param val Thickness of the sensor
-         */
-        void setSensorThickness(double val) { sensor_thickness_ = val; }
-        /**
-         * @brief Set the excess at the top of the sensor (positive y-coordinate)
-         * @param val Sensor top excess
-         */
-        void setSensorExcessTop(double val) { sensor_excess_.at(0) = val; }
-        /**
-         * @brief Set the excess at the right of the sensor (positive x-coordinate)
-         * @param val Sensor right excess
-         */
-        void setSensorExcessRight(double val) { sensor_excess_.at(1) = val; }
-        /**
-         * @brief Set the excess at the bottom of the sensor (negative y-coordinate)
-         * @param val Sensor bottom excess
-         */
-        void setSensorExcessBottom(double val) { sensor_excess_.at(2) = val; }
-        /**
-         * @brief Set the excess at the left of the sensor (negative x-coordinate)
-         * @param val Sensor right excess
-         */
-        void setSensorExcessLeft(double val) { sensor_excess_.at(3) = val; }
+        SensorMaterial getSensorMaterial() const { return sensor_material_; }
 
         /* CHIP */
         /**
@@ -290,37 +329,6 @@ namespace allpix {
         virtual std::vector<SupportLayer> getSupportLayers() const;
 
         /**
-         * @brief Add a new layer of support
-         * @param size Size of the support in the x,y-plane
-         * @param thickness Thickness of the support
-         * @param offset Offset of the support in the x,y-plane
-         * @param material Material of the support
-         * @param type Type of the hole
-         * @param location Location of the support (either 'sensor' or 'chip')
-         * @param hole_size Size of the optional hole in the support
-         * @param hole_offset Offset of the hole from its default position
-         */
-        // FIXME: Location (and material) should probably be an enum instead
-        void addSupportLayer(const ROOT::Math::XYVector& size,
-                             double thickness,
-                             ROOT::Math::XYZVector offset,
-                             std::string material,
-                             std::string type,
-                             std::string location,
-                             const ROOT::Math::XYVector& hole_size,
-                             ROOT::Math::XYVector hole_offset) {
-            ROOT::Math::XYZVector full_size(size.x(), size.y(), thickness);
-            ROOT::Math::XYZVector full_hole_size(hole_size.x(), hole_size.y(), thickness);
-            support_layers_.push_back(SupportLayer(full_size,
-                                                   std::move(offset),
-                                                   std::move(material),
-                                                   std::move(type),
-                                                   std::move(location),
-                                                   full_hole_size,
-                                                   std::move(hole_offset)));
-        }
-
-        /**
          * @brief Returns if a local position is within the sensitive device
          * @param local_pos Position in local coordinates of the detector model
          * @return True if a local position is within the sensor, false otherwise
@@ -343,13 +351,30 @@ namespace allpix {
                                                         const ROOT::Math::XYZPoint& outside) const = 0;
 
         /**
-         * @brief Returns if a local position is within the pixel implant region of the sensitive device
-         * @param local_pos Position in local coordinates of the detector model
-         * @return True if a local position is within the pixel implant, false otherwise
+         * @brief Returns if a local position is within the pixel implant region of the sensitive device.
          *
-         * @note This method is purely virtual and must be implemented by the respective concrete detector model classes
+         * If the implant is defined as 3D volume in the detector model, this method returns true if the given position is
+         * found within the implant volume. If the impland is configured with two dimensions only, i.e. an area on the sensor
+         * surface, the additional depth parameter is used to create a volume within which carriers are considered inside the
+         * implant.
+         *
+         * @param local_pos Position in local coordinates of the detector model
+         * @return Either the implant in which the position is located, or false
          */
-        virtual bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const = 0;
+        virtual std::optional<Implant> isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const;
+
+        /**
+         * @brief Calculate entry point of step into impant volume from one point outside the implant (before step) and one
+         * point inside (after step).
+         * @throws std::invalid_argument if no intersection of track segment with implant volume can be found
+         * @param implant The implant the intercept should be calculated for
+         * @param  outside Position before the step, outside the implant volume
+         * @param  inside  Position after the step, inside the implant volume
+         * @return Entry point in implant in local coordinates of the sensor
+         */
+        ROOT::Math::XYZPoint getImplantIntercept(const Implant& implant,
+                                                 const ROOT::Math::XYZPoint& outside,
+                                                 const ROOT::Math::XYZPoint& inside) const;
 
         /**
          * @brief Returns if a pixel index is within the grid of pixels defined for the device
@@ -424,11 +449,50 @@ namespace allpix {
         virtual bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const = 0;
 
     protected:
+        /**
+         * @brief Set number of pixels (replicated blocks in generic sensors)
+         * @param val Number of two dimensional pixels
+         */
+        void setNPixels(ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>> val) {
+            number_of_pixels_ = std::move(val);
+        }
+
+        /**
+         * @brief Set the size of a pixel
+         * @param val Size of a pixel
+         */
+        void setPixelSize(ROOT::Math::XYVector val) { pixel_size_ = std::move(val); }
+
+        /**
+         * @brief Set the thickness of the sensor
+         * @param val Thickness of the sensor
+         */
+        void setSensorThickness(double val) { sensor_thickness_ = val; }
+        /**
+         * @brief Set the excess at the top of the sensor (positive y-coordinate)
+         * @param val Sensor top excess
+         */
+        void setSensorExcessTop(double val) { sensor_excess_.at(0) = val; }
+        /**
+         * @brief Set the excess at the right of the sensor (positive x-coordinate)
+         * @param val Sensor right excess
+         */
+        void setSensorExcessRight(double val) { sensor_excess_.at(1) = val; }
+        /**
+         * @brief Set the excess at the bottom of the sensor (negative y-coordinate)
+         * @param val Sensor bottom excess
+         */
+        void setSensorExcessBottom(double val) { sensor_excess_.at(2) = val; }
+        /**
+         * @brief Set the excess at the left of the sensor (negative x-coordinate)
+         * @param val Sensor right excess
+         */
+        void setSensorExcessLeft(double val) { sensor_excess_.at(3) = val; }
+
         std::string type_;
 
         ROOT::Math::DisplacementVector2D<ROOT::Math::Cartesian2D<unsigned int>> number_of_pixels_;
         ROOT::Math::XYVector pixel_size_;
-        ROOT::Math::XYVector implant_size_;
         Pixel::Type pixel_type_{Pixel::Type::RECTANGLE};
 
         double sensor_thickness_{};
@@ -436,9 +500,71 @@ namespace allpix {
         SensorMaterial sensor_material_{SensorMaterial::SILICON};
 
         std::shared_ptr<DetectorAssembly> assembly_;
+        std::vector<Implant> implants_;
         std::vector<SupportLayer> support_layers_;
 
     private:
+        ///@{
+        /**
+         * @brief Use default copy and move behaviour
+         */
+        DetectorModel(const DetectorModel&) = default;
+        DetectorModel& operator=(const DetectorModel&) = default;
+
+        DetectorModel(DetectorModel&&) = default;
+        DetectorModel& operator=(DetectorModel&&) = default;
+        ///@}
+
+        /**
+         * @brief Add a new implant
+         * @param type Type of the implant
+         * @param shape Shape of the implant cross-section
+         * @param size Size of the implant
+         * @param offset Offset of the implant from the pixel center
+         * @param orientation Rotation angle around the implant z-axis
+         * @param config Configuration of the implant
+         */
+        void addImplant(const Implant::Type& type,
+                        const Implant::Shape& shape,
+                        ROOT::Math::XYZVector size,
+                        const ROOT::Math::XYVector& offset,
+                        double orientation,
+                        Configuration config);
+
+        /**
+         * @brief Add a new layer of support
+         * @param size Size of the support in the x,y-plane
+         * @param thickness Thickness of the support
+         * @param offset Offset of the support in the x,y-plane
+         * @param material Material of the support
+         * @param type Type of the hole
+         * @param location Location of the support (either 'sensor' or 'chip')
+         * @param hole_size Size of the optional hole in the support
+         * @param hole_offset Offset of the hole from its default position
+         */
+        // FIXME: Location (and material) should probably be an enum instead
+        void addSupportLayer(const ROOT::Math::XYVector& size,
+                             double thickness,
+                             ROOT::Math::XYZVector offset,
+                             std::string material,
+                             std::string type,
+                             std::string location,
+                             const ROOT::Math::XYVector& hole_size,
+                             ROOT::Math::XYVector hole_offset) {
+            ROOT::Math::XYZVector full_size(size.x(), size.y(), thickness);
+            ROOT::Math::XYZVector full_hole_size(hole_size.x(), hole_size.y(), thickness);
+            support_layers_.push_back(SupportLayer(full_size,
+                                                   std::move(offset),
+                                                   std::move(material),
+                                                   std::move(type),
+                                                   std::move(location),
+                                                   full_hole_size,
+                                                   std::move(hole_offset)));
+        }
+
+        // Validation of the detector model
+        virtual void validate();
+
         ConfigReader reader_;
     };
 } // namespace allpix

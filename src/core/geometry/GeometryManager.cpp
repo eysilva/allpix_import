@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of geometry manager
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -130,16 +130,6 @@ void GeometryManager::load(ConfigManager* conf_manager, RandomNumberGenerator& s
         model_paths_.emplace_back(config_file_path.parent_path());
         LOG(TRACE) << "Registered path of configuration file as model location.";
     }
-}
-
-/**
- * The default list of models to search for are in the following order
- * - The list of paths provided in the main configuration as model_paths
- * - The build variable ALLPIX_MODEL_DIR pointing to the installation directory of the framework models
- * - The directories in XDG_DATA_DIRS with ALLPIX_PROJECT_NAME attached or /usr/share/:/usr/local/share if not defined
- */
-std::vector<std::string> GeometryManager::getModelsPath() {
-    return model_paths_;
 }
 
 /**
@@ -276,9 +266,6 @@ bool GeometryManager::hasModel(const std::string& name) const {
     return model_names_.find(name) != model_names_.end();
 }
 
-std::vector<std::shared_ptr<DetectorModel>> GeometryManager::getModels() const {
-    return models_;
-}
 /**
  * @throws InvalidDetectorError If a model with this name does not exist
  */
@@ -368,10 +355,6 @@ std::vector<std::shared_ptr<Detector>> GeometryManager::getDetectorsByType(const
     }
 
     return result;
-}
-
-std::list<Configuration>& GeometryManager::getPassiveElements() {
-    return passive_elements_;
 }
 
 void GeometryManager::load_models() {

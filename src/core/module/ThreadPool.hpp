@@ -2,7 +2,7 @@
  * @file
  * @brief Definition of thread pool for concurrent events
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -121,12 +121,13 @@ namespace allpix {
 
         private:
             std::atomic_bool valid_{true};
-            mutable std::mutex mutex_;
+            mutable std::mutex mutex_{};
             std::queue<T> queue_;
             std::set<uint64_t> completed_ids_;
             uint64_t current_id_{0};
             using PQValue = std::pair<uint64_t, T>;
             std::priority_queue<PQValue, std::vector<PQValue>, std::greater<>> priority_queue_;
+            std::atomic_size_t priority_queue_size_{0};
             std::condition_variable push_condition_;
             std::condition_variable pop_condition_;
             const size_t max_standard_size_;
@@ -197,19 +198,19 @@ namespace allpix {
          * @brief Get the lowest ID that is not completely processed yet
          * @return n Identifier that is not yet completed
          */
-        uint64_t minimumUncompleted() const;
+        uint64_t minimumUncompleted() const { return queue_.currentId(); }
 
         /**
          * @brief Return the total number of enqueued jobs
          * @return The number of enqueued jobs
          */
-        size_t queueSize() const;
+        size_t queueSize() const { return queue_.size(); }
 
         /**
          * @brief Return the number of jobs in buffered priority queue
          * @return The number of enqueued jobs in the buffered queue
          */
-        size_t bufferedQueueSize() const;
+        size_t bufferedQueueSize() const { return queue_.prioritySize(); }
 
         /**
          * @brief Check if any worker thread has thrown an exception
@@ -275,7 +276,7 @@ namespace allpix {
         std::atomic_bool done_{false};
 
         std::atomic<unsigned int> run_cnt_{0};
-        mutable std::mutex run_mutex_;
+        mutable std::mutex run_mutex_{};
         std::condition_variable run_condition_;
         std::vector<std::thread> threads_;
 

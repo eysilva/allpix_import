@@ -2,7 +2,7 @@
  * @file
  * @brief Implementation of configuration
  *
- * @copyright Copyright (c) 2016-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2016-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -60,13 +60,6 @@ unsigned int Configuration::count(std::initializer_list<std::string> keys) const
         }
     }
     return found;
-}
-
-std::string Configuration::getName() const {
-    return name_;
-}
-std::filesystem::path Configuration::getFilePath() const {
-    return path_;
 }
 
 std::string Configuration::getText(const std::string& key) const {
@@ -175,10 +168,6 @@ void Configuration::setAlias(const std::string& new_key, const std::string& old_
     if(warn) {
         LOG(WARNING) << "Parameter \"" << old_key << "\" is deprecated and superseded by \"" << new_key << "\"";
     }
-}
-
-unsigned int Configuration::countSettings() const {
-    return static_cast<unsigned int>(config_.size());
 }
 
 /**

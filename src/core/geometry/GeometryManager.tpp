@@ -2,7 +2,7 @@
  * @file
  * @brief Template implementation of geometry manager
  *
- * @copyright Copyright (c) 2020-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2020-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -20,6 +20,26 @@ namespace allpix {
         } catch(std::out_of_range&) {
             return nullptr;
         }
+    }
+
+    /**
+     * If the returned object is not a null pointer it is guaranteed to be of the correct type
+     */
+    template <typename T>
+    std::vector<std::shared_ptr<T>> GeometryManager::getExternalObjects(const std::string& associated_name,
+                                                                        const std::regex& regex) const {
+        std::vector<std::shared_ptr<T>> matched_objects;
+        try {
+            for(const auto& [key, object] : external_objects_.at(typeid(T))) {
+                const auto& [name, id] = key;
+                if(name == associated_name && std::regex_match(id, regex)) {
+                    matched_objects.push_back(std::static_pointer_cast<T>(object));
+                }
+            }
+        } catch(std::out_of_range&) {
+        }
+
+        return matched_objects;
     }
 
     /**

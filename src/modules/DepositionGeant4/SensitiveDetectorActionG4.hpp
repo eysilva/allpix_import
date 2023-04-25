@@ -2,7 +2,7 @@
  * @file
  * @brief Defines the handling of the sensitive device
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -140,6 +140,8 @@ namespace allpix {
         std::map<int, int> track_pdg_;
         // Arrival timestamp of the tracks
         std::map<int, double> track_time_;
+        // Total charge by track
+        std::map<int, unsigned int> track_charge_;
 
         // Map from deposit index to track id
         std::vector<int> deposit_to_id_;

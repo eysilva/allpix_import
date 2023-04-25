@@ -3,7 +3,7 @@
  * @brief Implements the handling of the sensitive device
  * @remarks Based on code from John Idarraga
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -80,7 +80,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     // excitations via the Fano factor. We assume Gaussian statistics here.
     auto mean_charge = edep / charge_creation_energy_;
     allpix::normal_distribution<double> charge_fluctuation(mean_charge, std::sqrt(mean_charge * fano_factor_));
-    auto charge = static_cast<unsigned int>(charge_fluctuation(random_generator_));
+    auto charge = static_cast<unsigned int>(std::max(charge_fluctuation(random_generator_), 0.));
 
     const auto* userTrackInfo = dynamic_cast<TrackInfoG4*>(track->GetUserInformation());
     if(userTrackInfo == nullptr) {
@@ -108,6 +108,7 @@ G4bool SensitiveDetectorActionG4::ProcessHits(G4Step* step, G4TouchableHistory*)
     // Update current end point with the current last step
     auto end_position = detector_->getLocalPosition(static_cast<ROOT::Math::XYZPoint>(postStep->GetPosition()));
     track_end_[trackID] = end_position;
+    track_charge_[trackID] += charge;
 
     // Add new deposit if the charge is more than zero
     if(charge == 0) {
@@ -152,6 +153,7 @@ void SensitiveDetectorActionG4::clearEventInfo() {
     track_end_.clear();
     track_pdg_.clear();
     track_time_.clear();
+    track_charge_.clear();
 
     deposit_position_.clear();
     deposit_charge_.clear();
@@ -178,6 +180,7 @@ void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* mess
         ROOT::Math::XYZPoint end_point;
         auto local_end = track_end_.at(track_id);
         auto pdg_code = track_pdg_.at(track_id);
+        auto charge = track_charge_.at(track_id);
         auto track_time_global = track_time_.at(track_id);
         auto track_time_local = track_time_global - time_reference;
 
@@ -185,6 +188,8 @@ void SensitiveDetectorActionG4::dispatchMessages(Module* module, Messenger* mess
         auto global_end = detector_->getGlobalPosition(local_end);
         mc_particles.emplace_back(
             local_begin, global_begin, local_end, global_end, pdg_code, track_time_local, track_time_global);
+        // Count electrons and holes:
+        mc_particles.back().setTotalDepositedCharge(2 * charge);
         mc_particles.back().setTrack(track_info_manager_->findMCTrack(track_id));
         id_to_particle_[track_id] = mc_particles.size() - 1;
 

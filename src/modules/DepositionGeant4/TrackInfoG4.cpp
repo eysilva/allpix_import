@@ -2,7 +2,7 @@
  * @file
  * @brief Implements a G4VUserTrackInformation to carry unique track and parent track IDs
  *
- * @copyright Copyright (c) 2018-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2018-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -33,65 +33,4 @@ void TrackInfoG4::finalizeInfo(const G4Track* const aTrack) {
     final_tot_E_ = aTrack->GetTotalEnergy();
     end_point_ = static_cast<ROOT::Math::XYZPoint>(aTrack->GetPosition());
     end_time_ = aTrack->GetGlobalTime();
-}
-
-int TrackInfoG4::getID() const {
-    return custom_track_id_;
-}
-
-int TrackInfoG4::getParentID() const {
-    return parent_track_id_;
-}
-
-ROOT::Math::XYZPoint TrackInfoG4::getStartPoint() const {
-    return start_point_;
-}
-
-ROOT::Math::XYZPoint TrackInfoG4::getEndPoint() const {
-    return end_point_;
-}
-
-double TrackInfoG4::getStartTime() const {
-    return start_time_;
-}
-
-double TrackInfoG4::getEndTime() const {
-    return end_time_;
-}
-
-int TrackInfoG4::getParticleID() const {
-    return particle_id_;
-}
-
-int TrackInfoG4::getCreationProcessType() const {
-    return origin_g4_process_type_;
-}
-
-double TrackInfoG4::getKineticEnergyInitial() const {
-
-    return initial_kin_E_;
-}
-
-double TrackInfoG4::getTotalEnergyInitial() const {
-    return initial_tot_E_;
-}
-
-double TrackInfoG4::getKineticEnergyFinal() const {
-    return final_kin_E_;
-}
-
-double TrackInfoG4::getTotalEnergyFinal() const {
-    return final_tot_E_;
-}
-
-std::string TrackInfoG4::getOriginatingVolumeName() const {
-    return initial_g4_vol_name_;
-}
-
-std::string TrackInfoG4::getTerminatingVolumeName() const {
-    return final_g4_vol_name_;
-}
-
-std::string TrackInfoG4::getCreationProcessName() const {
-    return origin_g4_process_name_;
 }

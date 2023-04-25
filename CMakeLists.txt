@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2016-2022 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2016-2023 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
 ###############################################
@@ -50,6 +50,7 @@ ADD_DEFINITIONS(-DALLPIX_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DALLPIX_PROJECT_V
 
 # Read possible build environment
 IF(DEFINED ENV{ALLPIX_BUILD_ENV})
+    MESSAGE(STATUS "Building in environment \"$ENV{ALLPIX_BUILD_ENV}\"")
     ADD_DEFINITIONS(-DALLPIX_BUILD_ENV=\"$ENV{ALLPIX_BUILD_ENV}\")
 ENDIF()
 
@@ -103,7 +104,7 @@ ADD_SUBDIRECTORY(etc/unittests)
 OPTION(BUILD_DOCS_ONLY "Build documentation only" OFF)
 
 # Variables to configure list of tests
-SET(DOCS_TESTS_UNCONF "${CMAKE_CURRENT_SOURCE_DIR}/doc/usermanual/14_appendix/tests.md.in")
+SET(DOCS_TESTS_UNCONF "${CMAKE_CURRENT_SOURCE_DIR}/doc/usermanual/15_appendix/tests.md.in")
 SET(DOCS_TESTS_CONF "${CMAKE_CURRENT_BINARY_DIR}/doc/tests.md")
 
 # Add targets for Doxygen code reference and user manual

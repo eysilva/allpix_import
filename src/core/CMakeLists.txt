@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2017-2022 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2017-2023 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
 # Include the dependencies
@@ -22,7 +22,6 @@ ADD_LIBRARY(
     config/ConfigManager.cpp
     config/OptionParser.cpp
     geometry/Detector.cpp
-    geometry/DetectorField.cpp
     geometry/DetectorModel.cpp
     geometry/PixelDetectorModel.cpp
     geometry/GeometryManager.cpp

@@ -2,7 +2,7 @@
  * @file
  * @brief Pixel detector model
  *
- * @copyright Copyright (c) 2017-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2017-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -66,13 +66,6 @@ namespace allpix {
                                                 const ROOT::Math::XYZPoint& outside) const override;
 
         /**
-         * @brief Returns if a local position is within the pixel implant region of the sensitive device
-         * @param local_pos Position in local coordinates of the detector model
-         * @return True if a local position is within the pixel implant, false otherwise
-         */
-        bool isWithinImplant(const ROOT::Math::XYZPoint& local_pos) const override;
-
-        /**
          * @brief Returns if a pixel index is within the grid of pixels defined for the device
          * @param pixel_index Pixel index to be checked
          * @return True if pixel_index is within the pixel grid, false otherwise
@@ -122,6 +115,9 @@ namespace allpix {
          * @return         Boolean whether pixels are neighbors or not
          */
         bool areNeighbors(const Pixel::Index& seed, const Pixel::Index& entrant, const size_t distance) const override;
+
+    protected:
+        void validate() override;
     };
 } // namespace allpix
 

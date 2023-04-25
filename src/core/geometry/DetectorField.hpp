@@ -2,7 +2,7 @@
  * @file
  * @brief Definition of detector fields
  *
- * @copyright Copyright (c) 2018-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2018-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -74,6 +74,19 @@ namespace allpix {
      */
     template <typename T> void flip_vector_components(T& field, bool x, bool y);
 
+    /*
+     * Vector field template specialization of helper function for field flipping
+     */
+    template <> inline void flip_vector_components<ROOT::Math::XYZVector>(ROOT::Math::XYZVector& vec, bool x, bool y) {
+        vec.SetXYZ((x ? -vec.x() : vec.x()), (y ? -vec.y() : vec.y()), vec.z());
+    }
+
+    /*
+     * Scalar field template specialization of helper function for field flipping
+     * Here, no inversion of the field components is required
+     */
+    template <> inline void flip_vector_components<double>(double&, bool, bool) {}
+
     /**
      * @brief Field instance of a detector
      *
@@ -93,13 +106,14 @@ namespace allpix {
          * @brief Check if the field is valid and either a field grid or a field function is configured
          * @return Boolean indicating field validity
          */
-        bool isValid() const { return function_ || (bins_[0] != 0 && bins_[1] != 0 && bins_[2] != 0); };
+        bool isValid() const { return function_ || (bins_[0] != 0 && bins_[1] != 0 && bins_[2] != 0); }
 
         /**
          * @brief Return the type of field
+         * @note The type of the field is set depending on the function used to apply it
          * @return The type of the field
          */
-        FieldType getType() const;
+        FieldType getType() const { return type_; }
 
         /**
          * @brief Get the field value in the sensor at a position provided in local coordinates

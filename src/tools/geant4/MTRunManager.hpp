@@ -2,7 +2,7 @@
  * @file
  * @brief The MTRunManager class, defines a custom Geant4 RunManager that works with Allpix threads.
  *
- * @copyright Copyright (c) 2019-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2019-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -97,7 +97,7 @@ namespace allpix {
          * @brief Overriding G4RunManager::AbortRun so as to reset the state to G4State_Idle in order to allow the next event
          * to run BeamOn
          */
-        void AbortRun(G4bool softAbort) override;
+        void AbortRun(G4bool softAbort = false) override; // NOLINT
 
     protected:
         /**

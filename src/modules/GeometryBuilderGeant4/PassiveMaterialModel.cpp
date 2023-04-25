@@ -3,7 +3,7 @@
  * @brief Implements the construction of passive material volumes
  * @remarks Code is based on code from Mathieu Benoit
  *
- * @copyright Copyright (c) 2019-2022 CERN and the Allpix Squared authors.
+ * @copyright Copyright (c) 2019-2023 CERN and the Allpix Squared authors.
  * This software is distributed under the terms of the MIT License, copied verbatim in the file "LICENSE.md".
  * In applying this license, CERN does not waive the privileges and immunities granted to it by virtue of its status as an
  * Intergovernmental Organization or submit itself to any jurisdiction.
@@ -83,7 +83,7 @@ void PassiveMaterialModel::buildVolume(const std::shared_ptr<G4LogicalVolume>& w
     G4LogicalVolume* mother_log_volume = nullptr;
     if(!getMotherVolume().empty()) {
         G4LogicalVolumeStore* log_volume_store = G4LogicalVolumeStore::GetInstance();
-        mother_log_volume = log_volume_store->GetVolume(getMotherVolume().append("_log"));
+        mother_log_volume = log_volume_store->GetVolume(getMotherVolume() + "_log");
     } else {
         mother_log_volume = world_log.get();
     }

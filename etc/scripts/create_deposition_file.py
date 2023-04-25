@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2020-2022 CERN and the Allpix Squared authors
+# SPDX-FileCopyrightText: 2020-2023 CERN and the Allpix Squared authors
 # SPDX-License-Identifier: MIT
 
 import sys
@@ -178,7 +178,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Seed PRNG with provided seed
-    if args.type is not None:
+    if args.seed is not None:
         random.seed(args.seed)
 
     # Check for availability of ROOT
