@@ -270,13 +270,13 @@ void DepositionGeant4Module::initialize() {
     }
 
 
-    if(config_.get<bool>("use_decay_physics") == true) {
-        // Register Ultra Cold Neutron physics list
-        LOG(INFO) << "Using Ultra-Cold Neutron physics add-on";
-        physicsList->RegisterPhysics(new G4DecayPhysics());
-        physicsList->RegisterPhysics(new UCNModularPhysicsList());
+    // if(config_.get<bool>("use_decay_physics") == true) {
+    //     // Register Ultra Cold Neutron physics list
+    //     LOG(INFO) << "Using Ultra-Cold Neutron physics add-on";
+    //     physicsList->RegisterPhysics(new G4DecayPhysics());
+    //     physicsList->RegisterPhysics(new UCNModularPhysicsList());
         
-    }
+    // }
 
 
     // Initialize the physics list
