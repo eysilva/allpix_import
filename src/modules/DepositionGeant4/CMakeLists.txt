@@ -29,6 +29,7 @@ ALLPIX_MODULE_SOURCES(
     DepositionGeant4Module.cpp
     GeneratorActionG4.cpp
     SensitiveDetectorActionG4.cpp
+    UCNModularPhysicsList.cpp
     TrackInfoG4.cpp
     TrackInfoManager.cpp
     SetTrackInfoUserHookG4.cpp
