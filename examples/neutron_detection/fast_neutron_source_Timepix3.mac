@@ -9,7 +9,6 @@
 /gps/ang/type beam1d 
 /gps/ang/sigma_r 0. deg
 # 
-# the beam energy is in gaussian profile centered at 400 MeV
 /gps/ene/type Gauss
-/gps/ene/mono 0.025 eV
+/gps/ene/mono 10 MeV
 /gps/ene/sigma 1E-3 eV
