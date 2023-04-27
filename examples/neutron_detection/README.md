@@ -1,8 +1,11 @@
-# Neutron detection Example
+---
+# SPDX-FileCopyrightText: 2022-2023 CERN and the Allpix Squared authors
+# SPDX-License-Identifier: CC-BY-4.0
+title: "Neutron detection with Timepix3"
+description: "This example demonstrate the possibility to simulate neutron detection by conversion using neutron capture media. A Timepix3 detector with a Boron10/Polyethylene thin coating is exposed to a source of neutrons with a energy of 0.025 eV / 10 MeV."
+---
 
-This example demonstrate the possibility to simulate neutron detection by conversion using neutron capture media. A Timepix3 detector with a Boron10/Polyethylene thin coating is exposed to a source of neutrons with a energy of 0.025 eV / 10 MeV. 
-
-The physics list QGSP_BERT_HP is used.
+The physics list QGSP_BERT_HP is used. To obtain more realistic clusters for high energy deposit, the repulsion model of the `ProjectionPropagation` module, by setting the `repulsion_deposit` parameter as in the examples. The `repulsion_attenuation_factor` allow to modify the intensity of the repulsion simulated. It is an empirical paramter to be tuned to your experimental situation. 
 
 
 ## Thermal neutrons with B10
