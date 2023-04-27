@@ -117,6 +117,7 @@ void Materials::init_materials() {
     materials_["titanium"] = nistman->FindOrBuildMaterial("G4_Ti");
     materials_["sio2"] = nistman->FindOrBuildMaterial("G4_SILICON_DIOXIDE");
     materials_["gadolinium"] = nistman->FindOrBuildMaterial("G4_Gd");
+    materials_["polyethylene"] = nistman->FindOrBuildMaterial("G4_POLYETHYLENE");
 
 
 
