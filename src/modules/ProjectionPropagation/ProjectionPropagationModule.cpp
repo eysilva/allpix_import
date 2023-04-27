@@ -23,6 +23,8 @@
 #include "objects/DepositedCharge.hpp"
 #include "objects/PropagatedCharge.hpp"
 
+#include "TF1.h"
+
 using namespace allpix;
 
 ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
@@ -42,6 +44,9 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
     config_.setDefault<unsigned int>("max_charge_groups", 1000);
     config_.setDefault<double>("integration_time", Units::get(25, "ns"));
     config_.setDefault<bool>("diffuse_deposit", false);
+    config_.setDefault<bool>("repulsion_deposit", false);
+    config_.setDefault<double>("repulsion_attenuation_factor", 0.1);
+
     config_.setDefault<std::string>("recombination_model", "none");
 
     config_.setDefault<bool>("output_linegraphs", false);
@@ -56,6 +61,8 @@ ProjectionPropagationModule::ProjectionPropagationModule(Configuration& config,
 
     integration_time_ = config_.get<double>("integration_time");
     diffuse_deposit_ = config_.get<bool>("diffuse_deposit");
+    repulse_deposit_ = config_.get<bool>("repulsion_deposit");
+    repulse_attenuation_factor_ = config_.get<double>("repulsion_attenuation_factor");
     charge_per_step_ = config_.get<unsigned int>("charge_per_step");
     max_charge_groups_ = config_.get<unsigned int>("max_charge_groups");
 
@@ -185,6 +192,44 @@ void ProjectionPropagationModule::run(Event* event) {
     LineGraph::OutputPlotPoints output_plot_points;
 
     // Loop over all deposits for propagation
+    
+
+    auto carrier_repulsion_sigma = [&](double charge, double drifttime,ROOT::Math::XYZPoint p) -> double {
+
+        auto efield = detector_->getElectricField(p);
+        double efield_mag = std::sqrt(efield.Mag2());
+        double doping = detector_->getDopingConcentration(p);
+        auto mob = (*mobility_)(propagate_type_,efield_mag,doping);
+
+        auto e0 = Units::get(8.854e-12,"C/V/m");
+        auto er = 11.7;
+        auto e = Units::get(1.602e-19,"C");
+        auto pi = TMath::Pi();
+
+
+        LOG(DEBUG) << "base mobility is " << Units::display(mob,"cm*cm/V/s");
+        
+        auto sigma_rep = repulse_attenuation_factor_ * TMath::Power((3*mob*charge*e*drifttime/(4*pi*e0*er)),1./3.);
+
+        return sigma_rep;
+    };
+
+    // Define a function to compute the repulsion smearing term
+    auto carrier_repulsion = [&](
+    double charge, double time,ROOT::Math::XYZPoint p) -> ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double>> {
+        ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double>> repulsion;
+
+        // Compute the repulsion smearing term here
+        if(charge > 0) {
+            std::normal_distribution<double> gauss_distribution(
+                0, carrier_repulsion_sigma(charge, time,p));
+            repulsion.SetXYZ(gauss_distribution(event->getRandomEngine()), gauss_distribution(event->getRandomEngine()), 0);
+            // LOG(INFO) << gauss_distribution(random_generator_) ;
+        }
+
+        return repulsion;
+    };
+
     for(const auto& deposit : deposits_message->getData()) {
 
         auto type = deposit.getType();
@@ -349,8 +394,25 @@ void ProjectionPropagationModule::run(Event* event) {
                 }
             }
 
+
+
+
+
+
+            
+
+
+
+
             double diffusion_std_dev = std::sqrt(2. * diffusion_constant * drift_time);
             LOG(TRACE) << "Diffusion width is " << Units::display(diffusion_std_dev, "um");
+
+            
+            auto repulsion_width = ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double>>(0,0,0);
+            if (repulse_deposit_){
+             repulsion_width  = carrier_repulsion(deposit.getCharge(),drift_time,position); 
+            };
+            LOG(DEBUG) << "Repulsion width is " << Units::display(repulsion_width.X(),"um") ; 
 
             // Check if charge carrier is still alive via its survival probability, evaluated once
             allpix::uniform_real_distribution<double> survival(0, 1);
@@ -367,7 +429,7 @@ void ProjectionPropagationModule::run(Event* event) {
             double diffusion_y = gauss_distribution(event->getRandomEngine());
 
             // Find projected position
-            auto local_position = ROOT::Math::XYZPoint(position.x() + diffusion_x, position.y() + diffusion_y, top_z_);
+            auto local_position = ROOT::Math::XYZPoint(position.x() + diffusion_x+repulsion_width.X(), position.y() + diffusion_y + repulsion_width.Y(), top_z_);
 
             auto global_time = deposit.getGlobalTime() + propagation_time;
             auto local_time = deposit.getLocalTime() + propagation_time;

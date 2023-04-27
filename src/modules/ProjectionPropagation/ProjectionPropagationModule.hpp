@@ -75,6 +75,8 @@ namespace allpix {
         bool output_plots_{}, output_linegraphs_{};
         double integration_time_{};
         bool diffuse_deposit_;
+        bool repulse_deposit_;
+        double repulse_attenuation_factor_;
         unsigned int charge_per_step_{};
         unsigned int max_charge_groups_{};
 
