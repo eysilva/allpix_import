@@ -10,5 +10,5 @@
 /gps/ang/sigma_r 0. deg
 # 
 /gps/ene/type Gauss
-/gps/ene/mono 10 MeV
+/gps/ene/mono 0.025 eV
 /gps/ene/sigma 1E-3 eV
