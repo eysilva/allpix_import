@@ -12,13 +12,13 @@
     gROOT->ProcessLine(".L  ../../../lib/libAllpixModuleDetectorHistogrammer.so");
     gROOT->ProcessLine(".L Analysis.C++g");
 
-    // AnalysisB10("/home/imb/Projects/allpix-squared/examples/neutron_detection/ThermalNeutronsResults/",
-    //         "output_ThermalNeutrons_Timepix3.root",
-    //         "B10CoatedDetector");
+    AnalysisB10("/home/imb/Projects/allpix-squared/examples/neutron_detection/ThermalNeutronsResults/",
+            "output_ThermalNeutrons_Timepix3.root",
+            "B10CoatedDetector");
 
     
-    AnalysisPE("/home/imb/Projects/allpix-squared/examples/neutron_detection/FastNeutronResults/",
-            "output_FastNeutrons_measurement_Timepix3.root",
-            "PECoatedDetector");
+    // AnalysisPE("/home/imb/Projects/allpix-squared/examples/neutron_detection/FastNeutronResults/",
+    //         "output_FastNeutrons_measurement_Timepix3.root",
+    //         "PECoatedDetector");
 
 }
